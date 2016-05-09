@@ -6,13 +6,13 @@ from ..etl.utils import (
     to_json_list, to_jel_letters
 )
 from ..etl.featurization import (
-    json_to_bow
+    json_to_wl, json_w_wl_to_texts
 )
 
 inflines = open('tests/test_data.json', 'r').readlines()
-dummy_json_list = {
+dummy_json = {
     'Url': 'http://...',
-    'Abstract': 'The quick quick brown brown dog.',
+    'Abstract': 'Abstract: The quick quick brown brown dog.',
     'JelCodes': ['C23', 'C43', 'D15'],
     'Citation': 'Important People. Important Journa. Important Pub Date'
 }
@@ -35,12 +35,19 @@ def test_to_jel_letters():
     with pytest.raises(ValueError):
         to_jel_letters(codes)
 
-def test_json_to_bow(js=dummy_json_list):
+def test_json_to_wl(js=dummy_json):
     assert (
-        json_to_bow(js) ==
+        json_to_wl(js) ==
         {'Url': js['Url'],
          'Abstract': js['Abstract'],
          'JelCodes': js['JelCodes'],
          'Citation': js['Citation'],
-         'BoW': dict(Counter(['quick', 'quick', 'brown', 'brown']))}
+         'word_list': sorted(['quick', 'quick', 'brown', 'brown'])}
+    )
+
+def test_json_w_wl_to_texts(js=dummy_json):
+    tmp = [json_to_wl(js)]
+    assert (
+        json_w_wl_to_texts(tmp) ==
+        [sorted(['quick', 'quick', 'brown', 'brown'])]
     )
