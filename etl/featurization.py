@@ -8,14 +8,20 @@ def json_to_wl(js):
     words = tmp['Abstract']
     lookup = string.maketrans(string.ascii_lowercase, string.ascii_lowercase)
 
-    word_list = string.translate(
-        words.lower(), lookup,
-        deletions=string.punctuation + string.digits
-    ).split(' ')
+    word_list = (words
+                 .lower()
+                 .encode('ascii', errors='replace')
+                 .translate(lookup, string.punctuation + string.digits)
+                 .split(' '))
     word_counts = Counter(word_list)
-    filter_list = ['abstract'] # can be extended to remove more
+    ## can be extended to remove more
+    stopwords = ['abstract', 'and', 'the', 'of', 'a', 'in', 'to', 'that',
+                 'is', 'with', 'are', 'we', 'for', 'on', 'i', 'an', 'be',
+                 'this', 'as', 'by', 'from', 'when', 'which', 'model',
+                 'models', 'their', 'it', 'these', 'they', 'have', 'find',
+                 'more']
     # sorted for testability's sake
-    tmp['word_list'] = sorted([w for w in word_list if word_counts[w] > 1 and w not in filter_list])
+    tmp['word_list'] = sorted([w for w in word_list if word_counts[w] > 1 and w not in stopwords])
     return tmp
 
 def json_w_wl_to_texts(jslist):
@@ -32,16 +38,15 @@ def json_w_wl_to_dictionary(jslist, output=None):
     a la gensim
     """
 
-    dictionary = copora.Dictionary(json_w_wl_to_texts(jslist))
+    dictionary = corpora.Dictionary(json_w_wl_to_texts(jslist))
     if output:
         dictionary.save(output)
     return dictionary
 
-def jslist_to_corpus(jslist, dictionary):
+def jslist_to_corpus(json_w_wl, dictionary):
     """
     Creates a corpus of sparse vectors in (id, count) format from
     a list of json objects and an already existing gensim dictionary
     """
 
-    json_w_wl = json_to_wl(jslist)
     return [dictionary.doc2bow(js['word_list']) for js in json_w_wl]

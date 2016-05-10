@@ -45,6 +45,25 @@ def test_json_to_wl(js=dummy_json):
          'word_list': sorted(['quick', 'quick', 'brown', 'brown'])}
     )
 
+    empty_js = {
+        'Url': '',
+        'Abstract': '',
+        'JelCodes': '',
+        'Citation': ''
+    }
+    empty_outcome = {}
+    empty_outcome.update(empty_js)
+    empty_outcome['word_list'] = []
+    assert json_to_wl(empty_js) == empty_outcome
+
+    js_w_unicode_abstract = {
+        'Url': '',
+        'Abstract': u'',
+        'JelCodes': '',
+        'Citation': ''
+    }
+    assert json_to_wl(js_w_unicode_abstract) == empty_outcome
+
 def test_json_w_wl_to_texts(js=dummy_json):
     tmp = [json_to_wl(js)]
     assert (
